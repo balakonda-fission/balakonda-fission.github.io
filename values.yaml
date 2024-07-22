@@ -1,0 +1,103 @@
+
+# Declare variables to be passed into your templates.
+
+# for postgres variables
+
+postgres:
+  # deployment variables
+  DepName: postgres-dep
+  replicaCount: 1
+  appName: postgres
+  containerName: postgres-db
+  repository: postgres
+  pullPolicy: IfNotPresent
+  tag: "latest"
+  
+  # configmap variables
+
+  configmapName: "postgres-cm"
+  POSTGRES_DB: "pgdb"
+  POSTGRES_USER: "postgres-user"
+  POSTGRES_PASSWORD: "postgres-password"
+
+  # pv & pvc variables
+
+  pvName: postgres-pv
+  pvStorage: 1Gi
+
+  pvcName: postgres-pvc
+  pvcStorage: 1Gi
+
+  # service variables
+  serviceType: ClusterIP
+  serviceName: postgres-svc
+  servicePort: 5432
+
+
+# # for clickhouse variables
+clickhouse:
+  
+  # deployment variables
+
+  DepName: clickhouse-dep
+  replicaCount: 1
+  appName: clickhouse
+  containerName: clickhouse-db
+  repository: clickhouse/clickhouse-server
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+  # configmap variables
+
+  configmapName: "clickhouse-cm"
+  # POSTGRES_DB: "pgdb"
+  CLICKHOUSE_USER: "clickhouse-user"
+  CLICKHOUSE_PASSWORD: "clickhouse-password"
+
+  # pv & pvc variables
+
+  pvName: clickhouse-pv
+  pvStorage: 1Gi
+
+  pvcName: clickhouse-pvc
+  pvcStorage: 1Gi
+
+  # service variables
+  serviceType: ClusterIP
+  serviceName: clickhouse-svc
+  servicePort: 8123
+
+# for superset variables
+
+superset:
+
+  DepName: superset-dep
+
+  replicaCount: 1
+
+  appName: superset
+
+  containerName: superset
+  
+  repository: balu139/superset
+  pullPolicy: Always
+  tag: "1"
+
+  # pvc & pvc variables
+
+  pvName: superset-pv
+  pvStorage: 1Gi
+
+  pvcName: superset-pvc
+  pvcStorage: 1Gi
+
+  imagePullSecret: superset-secret
+
+  serviceType: NodePort
+  serviceName: superset-svc
+  servicePort: 8088
+  servicetargetPort: 8088
+  servicenodePort: 30009
+
+
+

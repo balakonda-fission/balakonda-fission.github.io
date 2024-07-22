@@ -1,0 +1,82 @@
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.clickhouse.configmapName}}
+data:
+  CLICKHOUSE_USER: {{.Values.clickhouse.CLICKHOUSE_USER}}
+  CLICKHOUSE_PASSWORD: {{.Values.clickhouse.CLICKHOUSE_PASSWORD}}
+
+
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{.Values.clickhouse.pvName}}
+  labels:
+    type: clickhouse-db
+spec:
+  capacity:
+    storage: {{.Values.clickhouse.pvStorage}}
+  accessModes:
+   - ReadWriteOnce
+  hostPath:
+    path: /node-path/clickhouse-dump-data
+  storageClassName: "local-path"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{.Values.clickhouse.pvcName}}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.clickhouse.pvcStorage}}
+  storageClassName: "local-path"
+  selector:
+    matchLabels:
+      type: clickhouse-db
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{.Values.clickhouse.DepName}}
+spec:
+  selector:
+    matchLabels:
+      app: {{.Values.clickhouse.appName}}
+  serviceName: {{ .Values.clickhouse.serviceName }}
+  replicas: {{ .Values.clickhouse.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.clickhouse.appName}}
+    spec:
+      containers:
+      - name: {{.Values.clickhouse.containerName}}
+        image: "{{ .Values.clickhouse.repository }}:{{ .Values.clickhouse.tag }}"
+        ports:
+        - containerPort: {{ .Values.clickhouse.servicePort }}
+        envFrom:
+          - configMapRef:
+              name: {{.Values.clickhouse.configmapName}}
+        volumeMounts:
+        - name: clickhouse-dump-data
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: clickhouse-dump-data
+          persistentVolumeClaim:
+            claimName: {{.Values.clickhouse.pvcName}}
+
+
+
+

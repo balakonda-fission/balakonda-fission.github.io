@@ -1,0 +1,84 @@
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.postgres.configmapName}}
+data:
+  POSTGRES_DB: {{.Values.postgres.POSTGRES_DB}}
+  POSTGRES_USER: {{.Values.postgres.POSTGRES_USER}}
+  POSTGRES_PASSWORD: {{.Values.postgres.POSTGRES_PASSWORD}}
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{.Values.postgres.pvName}}
+  labels:
+    type: postgres-db
+spec:
+  capacity:
+    storage: {{.Values.postgres.pvStorage}}
+  accessModes:
+   - ReadWriteOnce
+  hostPath:
+    path: /node-path/pg-dump-data
+  storageClassName: "local-path"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{.Values.postgres.pvcName}}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.postgres.pvcStorage}}
+  storageClassName: "local-path"
+  selector:
+    matchLabels:
+      type: postgres-db
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{.Values.postgres.DepName}}
+spec:
+  selector:
+    matchLabels:
+      app: {{.Values.postgres.appName}}
+  serviceName: {{ .Values.postgres.serviceName }}
+  replicas: {{ .Values.postgres.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.postgres.appName}}
+    spec:
+      containers:
+      - name: {{.Values.postgres.containerName}}
+        image: "{{ .Values.postgres.repository }}:{{ .Values.postgres.tag }}"
+        ports:
+        - containerPort: {{ .Values.postgres.servicePort }}
+        envFrom:
+          - configMapRef:
+              name: {{.Values.postgres.configmapName}}
+        volumeMounts:
+        - name: pgdata
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: {{.Values.postgres.pvcName}}
+
+
+
+
+
+
+
+

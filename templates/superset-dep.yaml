@@ -1,0 +1,168 @@
+
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: superset-secret
+# type: kubernetes.io/dockerconfigjson
+# data:
+#   .dockerconfigjson: |
+#     {
+#       "auths": {
+#         "https://index.docker.io/v1/": {
+#           "username": "YmFsdTEzOQ==",
+#           "password": "Vmlja3lAMTIzNA==",
+#           "email": "YmFsdTM5MWJhbHUuZ21haWwtY29t",
+#           "auth": "YmFsdTEzOTpWaWNreUAxMjM0"
+#         }
+#       }
+#     }
+
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: superset-secret
+# type: Opaque  # Change type to Opaque
+# data:
+#   username: balu139
+#   password: Vicky@1234
+#   email: balu391balu@gmail.com
+
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: superset-secret  # Replace with your desired secret name
+# type: kubernetes.io/dockercfg
+# data:
+#   .dockercfg: |
+#     {
+#       "auths": {
+#         "https://index.docker.io/v1/": {  # Replace with your registry URL (if needed)
+#           "auth": "YmFsdTEzOTpWaWNreUAxMjM0"
+#         }
+#       }
+#     }
+
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: superset-secret
+# type: kubernetes.io/dockerconfigjson
+# data:
+#   .dockerconfigjson: eyJhdXRocyI6IHsiaHR0cHM6Ly9pbmRleC5kb2NrZXIuaW8vdjEvIjogeyJ1c2VybmFtZSI6ICJibWFsdTEzOSIsICJwYXNzd29yZCI6ICJWaWNrMkAxMjM0IiwgImVtYWlsIjogImJhbHUzOTFiYWx1QGdtYWlsLmNvbSIsICJhdXRoIjogIkFXVzY0TkdJaUFGU3l3In19fQ==
+#
+# ---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-cm
+data:
+  init-superset.sh: |
+        #!/bin/sh
+        set -e
+        export SUPERSET_SECRET_KEY=$(openssl rand -base64 42)
+        export TALISMAN_ENABLED=False
+        superset fab create-admin --username admin2 --firstname Admin2 --lastname Admin2 --email admin@localhost2 --password admin2
+        superset db upgrade
+        superset init
+        #su root
+        #pip install clickhouse-sqlalchemy==1.4 clickhouse-superset-dep-fdddcc59f-9n7dqconnect mysqlclient sqlalchemy-redshift
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{.Values.superset.pvName}}
+  labels:
+    type: superset
+spec:
+  capacity:
+    storage: {{.Values.superset.pvStorage}}
+  accessModes:
+   - ReadWriteOnce
+  hostPath:
+    path: /node-path/superset-dump-data
+  storageClassName: "local-path"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{.Values.superset.pvcName}}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.superset.pvcStorage}}
+  storageClassName: "local-path"
+  selector:
+    matchLabels:
+      type: superset
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.superset.DepName}}
+spec:
+  replicas: {{ .Values.superset.replicaCount }}
+  selector:  
+    matchLabels:
+      app: {{.Values.superset.appName}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.superset.appName}}
+    spec:
+      initContainers:
+      - name: init-permissions
+        # image: "{{ .Values.superset.repository }}:{{ .Values.superset.tag }}"
+        image: apache/superset
+        #command: ['sh', '-c', '/app/superset_home/init_superset.sh']
+        command: ['sh', '-c', 'export SUPERSET_SECRET_KEY=$(openssl rand -base64 42) && cp /init-scripts/init-superset.sh /app/superset_home && sh /app/superset_home/init-superset.sh && cd /app && ls -la && cd /app/superset_home && ls -la']
+        # securityContext:
+        #   runAsUser: 0
+        volumeMounts: 
+          - name: superset-init-data
+            mountPath: /init-scripts
+            readOnly: false
+          - mountPath: /app/superset_home/
+            name: superset-dump-data
+            readOnly: false
+      containers:
+      - name: {{.Values.superset.containerName}}
+        image: apache/superset
+        # image: "{{ .Values.superset.repository }}:{{ .Values.superset.tag }}"
+        command: ['sh', '-c', ' export SUPERSET_SECRET_KEY=$(openssl rand -base64 42) && superset load_examples && superset init && superset run -h 0.0.0.0 -p 8088 ']
+        imagePullPolicy: {{ .Values.superset.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.superset.servicePort }}
+        volumeMounts:
+          - mountPath: /app/superset_home/
+            name: superset-dump-data
+            readOnly: false          # volumeMounts:
+          # - name: superset-init-data
+          #   mountPath: /app/superset_home
+          #   readOnly: false
+
+      volumes:
+        - name: superset-dump-data
+          persistentVolumeClaim:
+            claimName: {{.Values.superset.pvcName}}
+        - name: superset-init-data
+          configMap:
+            name: superset-cm
+
+
+
+
+
+
+
+
+
+
