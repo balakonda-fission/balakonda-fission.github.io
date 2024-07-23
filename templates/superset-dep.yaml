@@ -62,7 +62,7 @@ data:
         set -e
         export SUPERSET_SECRET_KEY=$(openssl rand -base64 42)
         export TALISMAN_ENABLED=False
-        superset fab create-admin --username admin2 --firstname Admin2 --lastname Admin2 --email admin@localhost2 --password admin2
+        superset fab create-admin --username admin --firstname Admin --lastname Admin --email admin@localhost --password admin
         superset db upgrade
         superset init
         #su root
@@ -120,10 +120,8 @@ spec:
     spec:
       initContainers:
       - name: init-permissions
-        # image: "{{ .Values.superset.repository }}:{{ .Values.superset.tag }}"
         image: apache/superset
-        #command: ['sh', '-c', '/app/superset_home/init_superset.sh']
-        command: ['sh', '-c', 'export SUPERSET_SECRET_KEY=$(openssl rand -base64 42) && cp /init-scripts/init-superset.sh /app/superset_home && sh /app/superset_home/init-superset.sh && cd /app && ls -la && cd /app/superset_home && ls -la']
+        command: ['sh', '-c', 'export SUPERSET_SECRET_KEY=$(openssl rand -base64 42) && cp /init-scripts/init-superset.sh /app/superset_home && sh /app/superset_home/init-superset.sh && cd /app/superset_home && ls -la']
         # securityContext:
         #   runAsUser: 0
         volumeMounts: 
@@ -144,11 +142,7 @@ spec:
         volumeMounts:
           - mountPath: /app/superset_home/
             name: superset-dump-data
-            readOnly: false          # volumeMounts:
-          # - name: superset-init-data
-          #   mountPath: /app/superset_home
-          #   readOnly: false
-
+            readOnly: false          
       volumes:
         - name: superset-dump-data
           persistentVolumeClaim:

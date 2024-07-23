@@ -9,7 +9,10 @@ data:
   POSTGRES_USER: {{.Values.postgres.POSTGRES_USER}}
   POSTGRES_PASSWORD: {{.Values.postgres.POSTGRES_PASSWORD}}
 
+
+
 ---
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -24,6 +27,7 @@ spec:
   hostPath:
     path: /node-path/pg-dump-data
   storageClassName: "local-path"
+
 
 ---
 
@@ -68,12 +72,13 @@ spec:
           - configMapRef:
               name: {{.Values.postgres.configmapName}}
         volumeMounts:
-        - name: pgdata
-          mountPath: /docker-entrypoint-initdb.d
+          - name: pgdata
+            mountPath: /docker-entrypoint-initdb.d
       volumes:
         - name: pgdata
           persistentVolumeClaim:
             claimName: {{.Values.postgres.pvcName}}
+
 
 
 

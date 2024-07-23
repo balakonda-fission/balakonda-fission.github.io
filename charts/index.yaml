@@ -3,12 +3,12 @@ entries:
   clickhouse:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2024-07-22T18:45:55.04908672+05:30"
+    created: "2024-07-23T18:18:13.663695032+05:30"
     description: A Helm chart for clickhouse db in the Kubernetes
-    digest: 8f102fe2ae84b8412000a982b9720abd3c68c1f322e73ae7fd73ff6c56a4b889
+    digest: 9da04cf18c72b079402b9c96d5dada4161e6c67f9220c328e777fbf456924a01
     name: clickhouse
     type: application
     urls:
     - clickhouse-0.1.0.tgz
     version: 0.1.0
-generated: "2024-07-22T18:45:55.048450167+05:30"
+generated: "2024-07-23T18:18:13.662780299+05:30"
