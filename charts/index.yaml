@@ -1,14 +1,14 @@
 apiVersion: v1
 entries:
-  clickhouse:
+  pcs-stack:
   - apiVersion: v2
-    appVersion: 1.16.0
-    created: "2024-07-23T19:31:18.212942689+05:30"
-    description: A Helm chart for clickhouse db in the Kubernetes
-    digest: 9bb0a5ebcc5d4aa63a98a049dd96fc560dce78a28a888c99607c353e5b235e7e
-    name: clickhouse
+    appVersion: 1.0.0
+    created: "2024-07-24T17:11:28.411410748+05:30"
+    description: A Helm chart for PCS stack in the Kubernetes
+    digest: 6c518d5fdb6ff8b1e1e7785cfabcbf342259f135ad96033a8eee6a5a8ea7367b
+    name: pcs-stack
     type: application
     urls:
-    - clickhouse-0.1.0.tgz
+    - pcs-stack-0.1.0.tgz
     version: 0.1.0
-generated: "2024-07-23T19:31:18.211649633+05:30"
+generated: "2024-07-24T17:11:28.409880342+05:30"

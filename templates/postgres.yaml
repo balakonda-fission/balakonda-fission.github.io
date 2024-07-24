@@ -82,7 +82,18 @@ spec:
 
 
 
+---
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgres.serviceName }}
+spec:
+  type: {{ .Values.postgres.serviceType }}
+  selector:
+    app: {{ .Values.postgres.appName }}
+  ports:
+    - port: {{ .Values.postgres.servicePort }}
 
 
 
